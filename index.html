@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bulut Kaşifleri | Mini Cloud CTF</title>
+  <style>
+    :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    body { margin: 0; background: #0f172a; color: #e2e8f0; }
+    .wrap { max-width: 840px; margin: 60px auto; padding: 0 20px; }
+    .card { background:#111827; border:1px solid #1f2937; border-radius:16px; padding:28px; }
+    button { cursor:pointer; border:0; padding:12px 18px; border-radius:12px; font-weight:600; background:#22c55e; color:#052e16; }
+    #output { margin-top:16px; white-space: pre-wrap; color:#cbd5e1; }
+    table { border-collapse: collapse; width: 100%; margin-top: 12px; }
+    th, td { border: 1px solid #1f2937; padding: 8px; text-align: left; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Bulut Kaşifleri — Mini Cloud CTF</h1>
+      <p>Frontend + Database + API + Güvenlik + Loglama</p>
+      <button id="getDataBtn">Verileri Getir</button>
+      <div id="output">Butona basınca API’dan veri gelecektir.</div>
+    </div>
+  </div>
+
+  <script>
+    const API     = "https://bulut-kasifleri-api.cinar0arda.workers.dev?minPuan=80";
+    const API_KEY = "KASIF-12345-SECRET"; // CTF için; gerçek hayatta frontende koymayın
+
+    const btn = document.getElementById('getDataBtn');
+    const out = document.getElementById('output');
+
+    btn.addEventListener('click', async () => {
+      btn.disabled = true;
+      out.textContent = 'Yükleniyor...';
+      try {
+        const res = await fetch(API, { headers: { "x-api-key": API_KEY } });
+        if (!res.ok) throw new Error('API hata: ' + res.status);
+        const json = await res.json();
+
+        const rows = json.data || [];
+        if (!rows.length) { out.textContent = 'Kayıt bulunamadı.'; return; }
+
+        const headers = ['id','ad','soyad','puan'];
+        const table = document.createElement('table');
+        const thead = document.createElement('thead');
+        const trh = document.createElement('tr');
+        headers.forEach(h => { const th = document.createElement('th'); th.textContent = h; trh.appendChild(th); });
+        thead.appendChild(trh); table.appendChild(thead);
+
+        const tbody = document.createElement('tbody');
+        rows.forEach(r => {
+          const tr = document.createElement('tr');
+          headers.forEach(h => { const td = document.createElement('td'); td.textContent = r[h]; tr.appendChild(td); });
+          tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+
+        out.innerHTML = ''; out.appendChild(table);
+      } catch (e) {
+        out.textContent = 'Hata: ' + e.message;
+      } finally { btn.disabled = false; }
+    });
+  </script>
+</body>
+</html>
